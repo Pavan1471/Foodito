@@ -1,137 +1,141 @@
+"use client";
 
-"use client"
-
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { ArrowLeft } from "lucide-react"
-import { FaCreditCard, FaWallet, FaMoneyBillWave } from "react-icons/fa"
-import axios from "axios"
-import "./Payment.css"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { FaCreditCard, FaWallet, FaMoneyBillWave } from "react-icons/fa";
+import axios from "axios";
+import "./Payment.css";
 
 // Import toast at the top of the file
-import { Toaster, toast } from "react-hot-toast"
+import { Toaster, toast } from "react-hot-toast";
 
 // Backend API URL - change this to your actual backend URL
-const API_URL = "http://localhost:5000/api"
+const API_URL = "https://backend.sealpnut.com/api";
 
 const PaymentPage = () => {
-  const navigate = useNavigate()
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("")
-  const [showUPIOptions, setShowUPIOptions] = useState(false)
-  const [showCardOptions, setShowCardOptions] = useState(false)
-  const [showWalletOptions, setShowWalletOptions] = useState(false)
-  const [cartItems, setCartItems] = useState([])
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [selectedAddress, setSelectedAddress] = useState(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const navigate = useNavigate();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [showUPIOptions, setShowUPIOptions] = useState(false);
+  const [showCardOptions, setShowCardOptions] = useState(false);
+  const [showWalletOptions, setShowWalletOptions] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Load cart items and check login status on component mount
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token");
     if (token) {
-      setIsLoggedIn(true)
+      setIsLoggedIn(true);
 
       // Fetch selected address
-      const selectedAddressId = localStorage.getItem("selectedAddressId")
+      const selectedAddressId = localStorage.getItem("selectedAddressId");
       if (selectedAddressId) {
-        fetchSelectedAddress(token, selectedAddressId)
+        fetchSelectedAddress(token, selectedAddressId);
       } else {
         // Redirect to address page if no address is selected
-        alert("Please select a delivery address")
-        navigate("/address")
+        alert("Please select a delivery address");
+        navigate("/address");
       }
     } else {
       // Redirect non-logged in users
-      alert("Please login to proceed with payment")
-      navigate("/login")
+      alert("Please login to proceed with payment");
+      navigate("/login");
     }
 
     // Load cart items
-    const savedCart = localStorage.getItem("carts")
+    const savedCart = localStorage.getItem("carts");
     if (savedCart) {
-      const parsedCart = JSON.parse(savedCart)
+      const parsedCart = JSON.parse(savedCart);
       if (parsedCart.length === 0) {
         // Redirect if cart is empty
-        alert("Your cart is empty")
-        navigate("/cart")
+        alert("Your cart is empty");
+        navigate("/cart");
       } else {
-        setCartItems(parsedCart)
+        setCartItems(parsedCart);
       }
     } else {
       // Redirect if cart is empty
-      alert("Your cart is empty")
-      navigate("/cart")
+      alert("Your cart is empty");
+      navigate("/cart");
     }
-  }, [navigate])
+  }, [navigate]);
 
   const fetchSelectedAddress = async (token, addressId) => {
     try {
       // Use the dedicated address API endpoint
       const response = await axios.get(`${API_URL}/address`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
+      });
 
       if (response.data.data) {
-        const address = response.data.data.find((addr) => addr._id === addressId)
+        const address = response.data.data.find(
+          (addr) => addr._id === addressId
+        );
         if (address) {
-          setSelectedAddress(address)
+          setSelectedAddress(address);
         } else {
           // If address not found, redirect to address page
-          alert("Please select a delivery address")
-          navigate("/address")
+          alert("Please select a delivery address");
+          navigate("/address");
         }
       }
     } catch (error) {
-      console.error("Error fetching address:", error)
-      alert("Error fetching address. Please try again.")
-      navigate("/address")
+      console.error("Error fetching address:", error);
+      alert("Error fetching address. Please try again.");
+      navigate("/address");
     }
-  }
+  };
 
   const handlePaymentMethodChange = (event) => {
-    setSelectedPaymentMethod(event.target.value)
-  }
+    setSelectedPaymentMethod(event.target.value);
+  };
 
   const toggleUPIOptions = () => {
-    setShowUPIOptions(!showUPIOptions)
-  }
+    setShowUPIOptions(!showUPIOptions);
+  };
 
   const toggleCardOptions = () => {
-    setShowCardOptions(!showCardOptions)
-  }
+    setShowCardOptions(!showCardOptions);
+  };
 
   const toggleWalletOptions = () => {
-    setShowWalletOptions(!showWalletOptions)
-  }
+    setShowWalletOptions(!showWalletOptions);
+  };
 
   // Calculate cart totals - matching the Cart component structure
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * (item.quantity || 1), 0)
-  const deliveryFee = 3 // Static delivery fee to match Cart component
-  const total = subtotal + deliveryFee // Calculate total
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * (item.quantity || 1),
+    0
+  );
+  const deliveryFee = 3; // Static delivery fee to match Cart component
+  const total = subtotal + deliveryFee; // Calculate total
 
   const handlePlaceOrder = async () => {
     if (!isLoggedIn) {
-      alert("Please login to place an order")
-      navigate("/login")
-      return
+      alert("Please login to place an order");
+      navigate("/login");
+      return;
     }
 
     if (!selectedPaymentMethod) {
-      alert("Please select a payment method")
-      return
+      alert("Please select a payment method");
+      return;
     }
 
     if (!selectedAddress) {
-      alert("Please select a delivery address")
-      navigate("/address")
-      return
+      alert("Please select a delivery address");
+      navigate("/address");
+      return;
     }
 
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
 
       // Create order object
       const order = {
@@ -150,17 +154,18 @@ const PaymentPage = () => {
           country: "India",
         },
         paymentMethod: selectedPaymentMethod,
-        paymentStatus: selectedPaymentMethod === "cod" ? "pending" : "completed",
+        paymentStatus:
+          selectedPaymentMethod === "cod" ? "pending" : "completed",
         orderStatus: "processing",
-      }
+      };
 
       // Send order to backend using the orders API
       const response = await axios.post(`${API_URL}/orders`, order, {
         headers: { Authorization: `Bearer ${token}` },
-      })
+      });
 
       // Clear cart
-      localStorage.removeItem("carts")
+      localStorage.removeItem("carts");
 
       // Store order details for confirmation page
       localStorage.setItem(
@@ -172,23 +177,23 @@ const PaymentPage = () => {
           paymentMethod: selectedPaymentMethod,
           shippingAddress: selectedAddress,
           orderDate: new Date().toISOString(),
-        }),
-      )
+        })
+      );
 
       // Add toast notification here
       toast.success("Order placed successfully!", {
         position: "top-center",
         duration: 3000,
-      })
+      });
 
       // Redirect to confirmation page
-      navigate("/order-confirmation")
+      navigate("/order-confirmation");
     } catch (error) {
-      console.error("Error placing order:", error)
-      alert("Failed to place order. Please try again.")
-      setIsProcessing(false)
+      console.error("Error placing order:", error);
+      alert("Failed to place order. Please try again.");
+      setIsProcessing(false);
     }
-  }
+  };
 
   return (
     <div className="payment-page">
@@ -208,7 +213,8 @@ const PaymentPage = () => {
             <p className="address-name">{selectedAddress.name}</p>
             <p>{selectedAddress.address}</p>
             <p>
-              {selectedAddress.locality}, {selectedAddress.state} - {selectedAddress.pinCode}
+              {selectedAddress.locality}, {selectedAddress.state} -{" "}
+              {selectedAddress.pinCode}
             </p>
             <p>Mobile: {selectedAddress.mobileNo}</p>
           </div>
@@ -311,7 +317,8 @@ const PaymentPage = () => {
       {/* Price Details Section */}
       <div className="card price-details">
         <h3>
-          Price Details ({cartItems.length} {cartItems.length === 1 ? "Item" : "Items"})
+          Price Details ({cartItems.length}{" "}
+          {cartItems.length === 1 ? "Item" : "Items"})
         </h3>
         <div className="price-item">
           <span>Subtotal</span>
@@ -328,12 +335,16 @@ const PaymentPage = () => {
       </div>
 
       {/* Pay Now Button */}
-      <button className="pay-now-button" disabled={!selectedPaymentMethod || isProcessing} onClick={handlePlaceOrder}>
+      <button
+        className="pay-now-button"
+        disabled={!selectedPaymentMethod || isProcessing}
+        onClick={handlePlaceOrder}
+      >
         {isProcessing ? "Processing..." : "Place Order"}
       </button>
       <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export default PaymentPage
+export default PaymentPage;
