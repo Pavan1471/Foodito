@@ -10,7 +10,7 @@ import axios from "axios"
 import "./auth.css"
 
 // Backend API URL - change this to your actual backend URL
-const API_URL = "http://localhost:5000/api"
+const API_URL = "https://backend.sealpnut.com/api"
 
 const Signup = () => {
   const navigate = useNavigate()
